@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "editeaza film";
+}
+
+<div class='container mt-4'>
+    <h2>editeaza detaliile filmului</h2>
+    <hr />
+    <div class='row'>
+        <div class='col-md-6'>
+            <!-- Am adaugat form pentru a permite validarea browserului -->
+            <form id="editForm">
+                <input type='hidden' id='hiddenMovieId' value='@ViewBag.MovieId' />
+
+                <div class='mb-3'>
+                    <label class='form-label'>titlu film</label>
+                    <!-- Atributele 'required' si 'minlength' sunt citite de validarea client-side -->
+                    <input type='text' id='title' class='form-control' required minlength="3" />
+                </div>
+
+                <div class='mb-3'>
+                    <label class='form-label'>descriere</label>
+                    <textarea id='description' class='form-control' rows='4' required></textarea>
+                </div>
+
+                <div class='mb-3'>
+                    <label class='form-label'>genuri</label>
+                    <div id='genresContainer' class='d-flex flex-wrap gap-3 p-2 border rounded'>
+                        <span class="text-muted">se incarca genurile...</span>
+                    </div>
+                </div>
+
+                <button type="button" id='btnUpdate' class='btn btn-warning'>salveaza modificarile</button>
+                <a href='/Home/Index' class='btn btn-secondary ms-2'>inapoi la lista</a>
+            </form>
+
+            <div id='mesaj' class='mt-3'></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const movieId = document.getElementById('hiddenMovieId').value;
+        const form = document.getElementById('editForm');
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const responseMovie = await fetch(`/api/movies/${movieId}`);
+                if (!responseMovie.ok) throw new Error();
+                const movie = await responseMovie.json();
+
+                document.getElementById('title').value = movie.title;
+                document.getElementById('description').value = movie.description;
+
+                const responseGenres = await fetch('/api/genres');
+                const allGenres = await responseGenres.json();
+                const genresContainer = document.getElementById('genresContainer');
+                genresContainer.innerHTML = '';
+
+                allGenres.forEach(genre => {
+                    const isChecked = movie.genres && movie.genres.includes(genre.name) ? 'checked' : '';
+                    genresContainer.innerHTML += `
+                        <div class="form-check">
+                            <input class="form-check-input genre-checkbox" type="checkbox" value="${genre.id}" id="genre_${genre.id}" ${isChecked}>
+                            <label class="form-check-label" for="genre_${genre.id}">${genre.name}</label>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                document.getElementById('mesaj').innerHTML = '<span class="text-danger">Eroare la incarcare.</span>';
+            }
+        });
+
+        document.getElementById('btnUpdate').addEventListener('click', function() {
+            // Aici browserul verifica automat 'required' daca apelam checkValidity()
+            if (!form.checkValidity()) {
+                alert("Te rugam sa completezi toate campurile obligatorii!");
+                return;
+            }
+
+            const checkedBoxes = document.querySelectorAll('.genre-checkbox:checked');
+            const selectedGenreIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+            const updatedData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                genreIds: selectedGenreIds
+            };
+
+            fetch(`/api/movies/${movieId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('mesaj').innerHTML = '<span class=\'text-success fw-bold\'>modificat cu succes!</span>';
+                } else {
+                    document.getElementById('mesaj').innerHTML = '<span class=\'text-danger fw-bold\'>eroare la modificare.</span>';
+                }
+            });
+        });
+    </script>
+}

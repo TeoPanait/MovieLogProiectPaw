@@ -3,8 +3,7 @@
 public record WatchlistDto
 (
     int Id,
-    string Name,
-    int UserId,
+    string? UserId,
     List<string> MovieTitles //doar titlurile din lsita
 
 

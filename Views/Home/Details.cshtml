@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "detalii film";
+}
+
+<div class='container mt-5'>
+    <div class='card shadow-sm'>
+        <div class='card-body'>
+            <h2 id='movie-title' class='card-title text-primary'>se incarca datele...</h2>
+            <hr />
+            <p id='movie-description' class='card-text fs-5'></p>
+
+            <div class='mt-4'>
+                <a href='/Home/Index' class='btn btn-secondary'>inapoi la catalog</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // luam id ul trimis de controller
+        const movieId = @ViewBag.MovieId;
+
+        // cerem de la api doar filmul cu acest id
+        fetch(`/api/movies/${movieId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('filmul nu a fost gasit');
+                return response.json();
+            })
+            .then(movie => {
+                document.getElementById('movie-title').innerText = movie.title;
+                document.getElementById('movie-description').innerText = movie.description || 'acest film nu are o descriere adaugata inca.';
+            })
+            .catch(error => {
+                console.error('eroare:', error);
+                document.getElementById('movie-title').innerText = 'filmul nu a putut fi incarcat';
+                document.getElementById('movie-description').innerText = '';
+            });
+    </script>
+}

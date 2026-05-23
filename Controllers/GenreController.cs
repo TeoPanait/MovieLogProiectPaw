@@ -1,65 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieLog.Data;
-using MovieLog.Models;
 using MovieLog.DTOs;
+using MovieLog.Services;
+using Microsoft.AspNetCore.Authorization;
 
-namespace MovieLog.Controllers
+namespace MovieLog.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class GenresController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class GenreController : ControllerBase
+    private readonly IGenreService _genreService;
+
+    public GenresController(IGenreService genreService)
     {
-        private readonly AppDbContext _context;
-        public GenreController(AppDbContext context)
-        {
-            _context = context;
-        }
-        // GET: /api/genre -> Afiseaza toate genurile
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Genre>>> GetGenres()
-        {
-            var genres = await _context.Genres
-                .Select(g => new GenreDto(g.Id, g.Name))
-                .ToListAsync();
-            return Ok(genres);
-        }
+        _genreService = genreService;
+    }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Genre>> GetGenre(int id)
-        {
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-            return Ok(new GenreDto(genre.Id, genre.Name));
-        }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GenreDto>>> GetGenres(CancellationToken cancellationToken)
+    {
+        var genres = await _genreService.GetAllGenresAsync(cancellationToken);
+        return Ok(genres);
+    }
 
-        [HttpPost]
-        public async Task<ActionResult<Genre>> PostGenre(CreateGenreDto dto)
-        {
-            var genre = new Genre
-            {
-                Name=dto.Name
-            };
-            _context.Genres.Add(genre);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetGenre), new { id = genre.Id }, new GenreDto(genre.Id, genre.Name));
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteGenre(int id)
-        {
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            _context.Genres.Remove(genre);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<GenreDto>> PostGenre(CreateGenreDto dto, CancellationToken cancellationToken)
+    {
+        var createdGenre = await _genreService.CreateGenreAsync(dto, cancellationToken);
+        return CreatedAtAction(nameof(GetGenres), new { id = createdGenre.Id }, createdGenre);
     }
 }

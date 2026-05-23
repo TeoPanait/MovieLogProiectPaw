@@ -2,16 +2,15 @@
 
 namespace MovieLog.Models;
 
-public class Review
+public class Review : BaseEntity
 {
-    public int Id { get; set; }
 
     [Required]
     public string Text { get; set; } = string.Empty;
     public int Rating { get; set; }
 
-    public int UserId { get; set; }
-    public User User { get; set; } = null!;
+    public string? UserId { get; set; }
+    public ApplicationUser? User { get; set; }
 
     public int MovieId { get; set; }
     public Movie Movie { get; set; } = null!;

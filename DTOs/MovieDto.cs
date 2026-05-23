@@ -3,5 +3,7 @@
 public record MovieDto
 (
     int Id,
-    String Title
+    String Title,
+    String Description,
+    List<string> Genres
 );

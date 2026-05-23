@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieLog.Data;
 using MovieLog.DTOs;
-using MovieLog.Models;
+using MovieLog.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MovieLog.Controllers
 {
@@ -10,95 +9,65 @@ namespace MovieLog.Controllers
     [Route("api/[controller]")]
     public class MoviesController : ControllerBase
     {
-        // Conectam baza de date la acest controller
-        private readonly AppDbContext _context;
+        // Controllerul cere doar INTERFATA serviciului, nu clasa directa
+        private readonly IMovieService _movieService;
 
-        public MoviesController(AppDbContext context)
+        // Aici se intampla Dependency Injection: ASP.NET aduce serviciul gata facut
+        public MoviesController(IMovieService movieService)
         {
-            _context = context;
+            _movieService = movieService;
         }
 
-        // GET: /api/movies -> Afiseaza toate filmele
+        // GET: /api/movies
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(CancellationToken cancellationToken)
         {
-            var movies = await _context.Movies
-                .Select(m => new MovieDto(m.Id, m.Title))
-                .ToListAsync();
-
+            var movies = await _movieService.GetAllMoviesAsync(cancellationToken);
             return Ok(movies);
         }
 
-        // POST: /api/movies -> Adauga un film nou
-        [HttpPost]
-        public async Task<ActionResult<Movie>> PostMovie(Movie movie)
-        {
-            _context.Movies.Add(movie);
-            await _context.SaveChangesAsync(); // Aici se salveaza fizic
-
-            // Returnează codul 201 Created si filmul abia adaugat
-            return CreatedAtAction(nameof(GetMovies), new { id = movie.Id }, movie);
-        }
-
-        // GET: /api/movies/5 (Afisează un singur film după ID)
+        // GET: /api/movies/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetMovie(int id)
+        public async Task<ActionResult<MovieDto>> GetMovie(int id, CancellationToken cancellationToken)
         {
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = await _movieService.GetMovieByIdAsync(id, cancellationToken);
+            if (movie == null) return NotFound();
 
-            if (movie == null)
-            {
-                return NotFound(); // Returneaza status 404 dacă filmul nu exista
-            }
-
-            return movie;
+            return Ok(movie);
         }
 
-        // PUT: /api/movies/5 (Modifica un film)
+        // POST: /api/movies
+        [Authorize(Roles = "Admin")] // doar adminii pot adauga filme noi
+        [HttpPost]
+        public async Task<ActionResult<MovieDto>> PostMovie(CreateMovieDto dto, CancellationToken cancellationToken)
+        {
+            var createdMovie = await _movieService.CreateMovieAsync(dto, cancellationToken);
+
+            // Standardul REST: returnam 201 Created si obiectul nou creat
+            return CreatedAtAction(nameof(GetMovies), new { id = createdMovie.Id }, createdMovie);
+        }
+
+        // PUT: /api/movies/5
+        [Authorize(Roles = "Admin")] // protejam editarea, doar adminul are voie
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMovie(int id, Movie movie)
+        public async Task<IActionResult> PutMovie(int id, UpdateMovieDto dto, CancellationToken cancellationToken)
         {
-            // Verificam dacă ID-ul din link se potriveste cu ID-ul din corpul JSON-ului
-            if (id != movie.Id)
-            {
-                return BadRequest(); // Returnează status 400
-            }
+            // trimitem datele modificate catre serviciu ca sa faca update ul real in baza
+            // (ID-ul vine din link, iar dto contine noile modificari)
+            await _movieService.UpdateMovieAsync(id, dto, cancellationToken);
 
-            _context.Entry(movie).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Movies.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent(); // Returneaza status 204 (succes, dar fara continut de afisat)
+            return Ok(); // ii zicem javascript ului ca totul e in regula
         }
 
-        // DELETE: /api/movies/5 (Sterge un film)
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMovie(int id)
+        public async Task<IActionResult> DeleteMovie(int id, CancellationToken cancellationToken)
         {
-            var movie = await _context.Movies.FindAsync(id);
-            if (movie == null)
-            {
-                return NotFound();
-            }
+           var movie=  await _movieService.GetMovieByIdAsync(id, cancellationToken);
+           if (movie == null) return NotFound();
 
-            _context.Movies.Remove(movie);
-            await _context.SaveChangesAsync();
-
-            return NoContent(); // Status 204
+           await _movieService.DeleteMovieAsync(id, cancellationToken);
+           return NoContent(); //204: No contetn
         }
     }
 }

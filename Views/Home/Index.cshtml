@@ -1,0 +1,116 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Acasa - Filme";
+
+    var isAuth = User.Identity != null && User.Identity.IsAuthenticated;
+    var isAdmin = isAuth && User.IsInRole("Admin");
+    var isNormalUser = isAuth && !isAdmin;
+
+    var currentUserId = isAuth ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : "";
+}
+
+<div class="container mt-4">
+    <h2>Filmele Noastre</h2>
+
+    @if (isAdmin)
+    {
+        <a href="/Home/Create" class="btn btn-success mb-3">adauga film nou</a>
+    }
+
+    <div class="row" id="movies-container">
+        <div class="col-12">
+            <p class="text-muted">se incarca lista de filme...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const isAdmin = @(isAdmin.ToString().ToLower());
+        const isNormalUser = @(isNormalUser.ToString().ToLower());
+        const currentUserId = "@currentUserId";
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadMovies();
+        });
+
+        function loadMovies() {
+            fetch('/api/movies')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('movies-container');
+                    container.innerHTML = '';
+
+                    if (data.length === 0) {
+                        container.innerHTML = '<p class="text-warning">nu am gasit filme in baza de date</p>';
+                        return;
+                    }
+
+                    data.forEach(movie => {
+                        let genresHtml = (movie.genres && movie.genres.length > 0)
+                            ? movie.genres.map(g => `<span class="badge bg-secondary me-1">${g}</span>`).join('')
+                            : `<span class="badge bg-light text-dark">fara gen</span>`;
+
+                        let adminButtons = isAdmin ? `<a href='/Home/Edit/${movie.id}' class='btn btn-outline-warning btn-sm ms-2'>editeaza</a>
+                                                     <button onclick="deleteMovie(${movie.id})" class="btn btn-outline-danger btn-sm ms-2">sterge</button>` : '';
+
+                        let userButtons = isNormalUser ? `
+                                            <button onclick="adaugaInWatchlist(${movie.id})" class="btn btn-sm btn-outline-success ms-2">+ watchlist</button>
+                                            <button onclick="adaugaReview(${movie.id})" class="btn btn-sm btn-outline-info ms-1">nota ta</button>` : '';
+
+                        container.innerHTML += `
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${movie.title}</h5>
+                                        <div class="mb-2">${genresHtml}</div>
+                                        <p class="card-text">${movie.description || 'fara descriere'}</p>
+                                        <hr>
+                                        <a href='/Home/Details/${movie.id}' class='btn btn-outline-primary btn-sm'>vezi detalii</a>
+                                        ${adminButtons} ${userButtons}
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                })
+                .catch(error => console.error('eroare:', error));
+        }
+
+        function deleteMovie(movieId) {
+            if (!confirm("Esti sigur ca vrei sa stergi filmul? Actiunea este ireversibila.")) return;
+
+            fetch(`/api/movies/${movieId}`, { method: 'DELETE' })
+            .then(response => {
+                if (response.ok) {
+                    alert("Filmul a fost sters!");
+                    loadMovies();
+                } else {
+                    alert("Eroare la stergerea filmului.");
+                }
+            })
+            .catch(error => console.error('Eroare API:', error));
+        }
+
+        function adaugaReview(movieId) {
+            const nota = parseInt(prompt("Acorda o nota (1-10):"));
+            if (isNaN(nota) || nota < 1 || nota > 10) return;
+            const text = prompt("Scrie o scurta parere:");
+
+            fetch('/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text || "Fara comentariu", rating: nota, movieId: movieId, userId: currentUserId })
+            })
+            .then(r => { if (r.ok) alert("Recenzia ta a fost salvata!"); });
+        }
+
+        function adaugaInWatchlist(movieId) {
+            fetch('/api/watchlists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ movieId: movieId, userId: currentUserId })
+            })
+            .then(r => { if (r.ok) alert("Filmul a fost salvat in lista ta!"); });
+        }
+    </script>
+}

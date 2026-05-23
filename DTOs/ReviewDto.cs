@@ -6,5 +6,5 @@ public record ReviewDto
     string Text,
     int Rating,
     int MovieId,
-    int UserId
+    string? UserId
 );

@@ -2,10 +2,9 @@
 
 namespace MovieLog.Models;
 
-public class Genre
+public class Genre : BaseEntity 
 {
-    public int Id { get; set; }
-
+    //id ul este in baseEntity, nu trebuie sa il mai punem aici
     [Required]
     public string Name { get; set; } = string.Empty;
 
