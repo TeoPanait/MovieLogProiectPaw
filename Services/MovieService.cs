@@ -25,6 +25,7 @@ public class MovieService : IMovieService
             m.Id,
             m.Title,
             m.Description,
+            m.ImageUrl,
             m.Genres.Select(g => g.Name).ToList() // Luam doar numele genurilor
         ));
     }
@@ -38,6 +39,7 @@ public class MovieService : IMovieService
             movie.Id,
             movie.Title,
             movie.Description,
+            movie.ImageUrl,
             movie.Genres.Select(g => g.Name).ToList()
         );
     }
@@ -49,6 +51,7 @@ public class MovieService : IMovieService
         {
             Title = dto.Title,
             Description = dto.Description,
+            ImageUrl = dto.ImageUrl,
             Genres = new List<Genre>() // Inițializăm lista goală pentru genuri
         };
 
@@ -71,7 +74,7 @@ public class MovieService : IMovieService
         // Spunem dirijorului sa salveze baza de date
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new MovieDto(movie.Id, movie.Title, movie.Description, movie.Genres.Select(g => g.Name).ToList());
+        return new MovieDto(movie.Id, movie.Title, movie.Description, movie.ImageUrl, movie.Genres.Select(g => g.Name).ToList());
     }
 
     // ATENȚIE: Aici am schimbat MovieDto în UpdateMovieDto
@@ -85,6 +88,7 @@ public class MovieService : IMovieService
             // 2. actualizam campurile cu datele venite de pe net
             movie.Title = dto.Title;
             movie.Description = dto.Description;
+            movie.ImageUrl = dto.ImageUrl;
 
             // Ștergem genurile vechi pentru a le pune pe cele noi, proaspăt bifate
             movie.Genres.Clear();

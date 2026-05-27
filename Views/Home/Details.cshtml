@@ -4,13 +4,19 @@
 
 <div class='container mt-5'>
     <div class='card shadow-sm'>
-        <div class='card-body'>
-            <h2 id='movie-title' class='card-title text-primary'>se incarca datele...</h2>
-            <hr />
-            <p id='movie-description' class='card-text fs-5'></p>
+        <div class="row g-0">
+            <div class="col-md-4" id="image-container">
+            </div>
+            <div class="col-md-8">
+                <div class='card-body'>
+                    <h2 id='movie-title' class='card-title text-primary'>se incarca datele...</h2>
+                    <hr />
+                    <p id='movie-description' class='card-text fs-5'></p>
 
-            <div class='mt-4'>
-                <a href='/Home/Index' class='btn btn-secondary'>inapoi la catalog</a>
+                    <div class='mt-4'>
+                        <a href='/Home/Index' class='btn btn-secondary'>inapoi la catalog</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -30,6 +36,13 @@
             .then(movie => {
                 document.getElementById('movie-title').innerText = movie.title;
                 document.getElementById('movie-description').innerText = movie.description || 'acest film nu are o descriere adaugata inca.';
+
+                const imgContainer = document.getElementById('image-container');
+                if (movie.imageUrl) {
+                    imgContainer.innerHTML = `<img src="${movie.imageUrl}" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="poza film">`;
+                } else {
+                    imgContainer.innerHTML = `<div class="bg-light d-flex align-items-center justify-content-center h-100" style="min-height: 250px;"><span class="text-muted">Fara imagine</span></div>`;
+                }
             })
             .catch(error => {
                 console.error('eroare:', error);

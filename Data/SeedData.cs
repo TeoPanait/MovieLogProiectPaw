@@ -39,5 +39,45 @@ public static class SeedData
             if (result.Succeeded)
                 await userManager.AddToRoleAsync(admin, "Admin");
         }
+
+        // Adaugam genuri si filme default daca baza e goala
+        if (!context.Genres.Any())
+        {
+            var action = new Genre { Name = "Actiune" };
+            var scifi = new Genre { Name = "Sci-Fi" };
+            var drama = new Genre { Name = "Drama" };
+            var comedy = new Genre { Name = "Comedie" };
+
+            context.Genres.AddRange(action, scifi, drama, comedy);
+            await context.SaveChangesAsync();
+
+            if (!context.Movies.Any())
+            {
+                context.Movies.AddRange(
+                    new Movie 
+                    { 
+                        Title = "Matrix", 
+                        Description = "Un hacker descopera ca realitatea este o simulare.", 
+                        ImageUrl = "https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtNDRkZi00NDMzLWEyNzMtNjMwNjVjNDY5Zjc1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+                        Genres = new List<Genre> { action, scifi } 
+                    },
+                    new Movie 
+                    { 
+                        Title = "Inception", 
+                        Description = "Un hot fura secrete corporative folosind tehnologia viselor.", 
+                        ImageUrl = "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_FMjpg_UX1000_.jpg",
+                        Genres = new List<Genre> { action, scifi, drama } 
+                    },
+                    new Movie 
+                    { 
+                        Title = "The Truman Show", 
+                        Description = "Povestea unui om care descopera ca viata sa este un reality show.", 
+                        ImageUrl = "https://m.media-amazon.com/images/M/MV5BMDIzODcyY2EtMWY5NC00ZTA2LTkzNmQtZTZjMWM2YTQxYjgxXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+                        Genres = new List<Genre> { drama, comedy } 
+                    }
+                );
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

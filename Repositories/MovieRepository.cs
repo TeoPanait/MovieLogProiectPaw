@@ -6,13 +6,13 @@ namespace MovieLog.Repositories;
 
 public class MovieRepository : Repository<Movie>, IMovieRepository
 {
-    // Apeleaza constructorul din clasa de baza (muncitorul universal)
+    // Apeleaza constructorul din clasa de baza
     public MovieRepository(AppDbContext context) : base(context) { }
 
     public async Task<List<Movie>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Movies
-            .Include(m => m.Genres) // Aduce si genurile
+            .Include(m => m.Genres)
             .ToListAsync(cancellationToken);
     }
 

@@ -58,9 +58,14 @@
                                             <button onclick="adaugaInWatchlist(${movie.id})" class="btn btn-sm btn-outline-success ms-2">+ watchlist</button>
                                             <button onclick="adaugaReview(${movie.id})" class="btn btn-sm btn-outline-info ms-1">nota ta</button>` : '';
 
+                        let imgHtml = movie.imageUrl 
+                            ? `<img src="${movie.imageUrl}" class="card-img-top" alt="${movie.title}" style="height: 300px; object-fit: cover;">`
+                            : `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;"><span class="text-muted">Fara imagine</span></div>`;
+
                         container.innerHTML += `
                             <div class="col-md-4 mb-4">
                                 <div class="card h-100 shadow-sm">
+                                    ${imgHtml}
                                     <div class="card-body">
                                         <h5 class="card-title">${movie.title}</h5>
                                         <div class="mb-2">${genresHtml}</div>
