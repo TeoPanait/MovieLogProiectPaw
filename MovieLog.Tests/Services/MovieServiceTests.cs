@@ -100,6 +100,7 @@ public class MovieServiceTests
         var newMovie = new CreateMovieDto(
             "Film nou",
             "Continut suficient de lung pentru validare",
+            null,
             new List<int> { 1 }
         );
         await service.CreateMovieAsync(newMovie);
@@ -142,6 +143,7 @@ public class MovieServiceTests
         var updateDto = new UpdateMovieDto(
             "Titlu modificat",
             "Continut suficient de lung pentru validare",
+            null,
             new List<int>()
         );
         await service.UpdateMovieAsync(1, updateDto);
