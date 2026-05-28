@@ -20,6 +20,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Sectiune pentru recenzii -->
+    <div class="mt-5">
+        <h4>Recenzii</h4>
+        <div id="reviews-container" class="mt-3">
+            <span class="text-muted">Se incarca recenziile...</span>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -48,6 +56,39 @@
                 console.error('eroare:', error);
                 document.getElementById('movie-title').innerText = 'filmul nu a putut fi incarcat';
                 document.getElementById('movie-description').innerText = '';
+            });
+
+        // Incarcam recenziile pentru film
+        fetch(`/api/reviews/movie/${movieId}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Eroare la incarcarea recenziilor');
+                return res.json();
+            })
+            .then(reviews => {
+                const container = document.getElementById('reviews-container');
+                container.innerHTML = '';
+
+                if (reviews.length === 0) {
+                    container.innerHTML = '<span class="text-muted">Nu exista nicio recenzie pentru acest film. Fii primul care adauga una!</span>';
+                    return;
+                }
+
+                reviews.forEach(r => {
+                    container.innerHTML += `
+                        <div class="card mb-2 shadow-sm">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Nota: ${r.rating}/10</strong>
+                                </div>
+                                <p class="mb-0 mt-1">${r.text}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                console.error('eroare recenzii:', err);
+                document.getElementById('reviews-container').innerHTML = '<span class="text-danger">Eroare la incarcarea recenziilor.</span>';
             });
     </script>
 }

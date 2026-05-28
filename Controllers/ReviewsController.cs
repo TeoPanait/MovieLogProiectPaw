@@ -23,6 +23,16 @@ namespace MovieLog.Controllers
                 .ToListAsync();
             return Ok(reviews);
         }
+
+        [HttpGet("movie/{movieId}")]
+        public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviewsForMovie(int movieId)
+        {
+            var reviews = await _context.Reviews
+                .Where(r => r.MovieId == movieId)
+                .Select(r => new ReviewDto(r.Id, r.Text, r.Rating, r.MovieId, r.UserId))
+                .ToListAsync();
+            return Ok(reviews);
+        }
         [HttpPost]
         public async Task<ActionResult<Review>> PostReview(CreateReviewDto dto)
         {
