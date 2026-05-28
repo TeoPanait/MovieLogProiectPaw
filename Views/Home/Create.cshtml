@@ -7,17 +7,15 @@
     <hr />
     <div class="row">
         <div class="col-md-6">
-            <!-- Am adaugat tag-ul form ca sa activeze validarea automata a browserului -->
+            <!-- form pt validare automata a browserului -->
             <form id="createForm">
                 <div class="mb-3">
                     <label class="form-label">titlu film</label>
-                    <!-- 'required' si 'minlength' obliga browserul sa verifice continutul -->
                     <input type="text" id="title" class="form-control" placeholder="scrie titlul..." required minlength="3" />
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">descriere</label>
-                    <!-- 'required' obliga browserul sa verifice daca textul e gol -->
                     <textarea id="description" class="form-control" rows="3" placeholder="scrie o scurta descriere..." required></textarea>
                 </div>
 
@@ -40,7 +38,7 @@
         document.getElementById('btnSave').addEventListener('click', function () {
             const form = document.getElementById('createForm');
 
-            // Aceasta este diferenta majora: verificam daca formularul e valid in browser
+            // verificam daca formularul e valid in browser
             if (!form.checkValidity()) {
                 alert("Te rugam sa completezi corect toate campurile!");
                 return; // Oprim executia aici, nu facem fetch
@@ -53,7 +51,7 @@
                 imageUrl: document.getElementById('imageUrl').value || null
             };
 
-            // trimitem datele la api ul tau cu metoda post
+            // trimitem datele la api cu metoda post
             fetch('/api/movies', {
                 method: 'POST',
                 headers: {

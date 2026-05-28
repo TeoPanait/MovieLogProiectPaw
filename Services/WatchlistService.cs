@@ -34,16 +34,15 @@ public class WatchlistService : IWatchlistService
 
     public async Task<WatchlistDto> CreateWatchlistAsync(CreateWatchlistDto dto, CancellationToken cancellationToken = default)
     {
-        // 1. Aducem filmul din baza de date ca sa il putem adauga in lista
+        // 1. aducem filmul din baza de date
         var movie = await _unitOfWork.MovieRepository.GetByIdAsync(dto.MovieId, cancellationToken);
 
         if (movie == null)
         {
-            throw new Exception("Filmul nu a fost gasit!"); // sau poti returna null/o eroare specifica
+            throw new Exception("Filmul nu a fost gasit!"); 
         }
 
-        // 2. Cautam daca userul are deja un watchlist creat
-        // (Folosim metoda ta existenta de GetAll pentru a filtra)
+        // 2. verificam daca suerul are deja watchlist creat
         var allWatchlists = await _unitOfWork.WatchlistRepository.GetAllWithDetailsAsync(cancellationToken);
         var existingWatchlist = allWatchlists.FirstOrDefault(w => w.UserId == dto.UserId);
 
@@ -51,24 +50,23 @@ public class WatchlistService : IWatchlistService
 
         if (existingWatchlist != null)
         {
-            // Daca are deja lista, pur si simplu adaugam filmul la ea
             existingWatchlist.Movies.Add(movie);
             _unitOfWork.WatchlistRepository.Update(existingWatchlist);
             watchlistToSave = existingWatchlist;
         }
         else
         {
-            // Daca e prima data cand apasa pe buton, ii cream lista invizibila
+            // daca nu are watchlist deja il cream
             var newWatchlist = new Watchlist
             {
                 UserId = dto.UserId,
-                Movies = new List<Movie> { movie } // adaugam filmul direct in cos
+                Movies = new List<Movie> { movie } // adaugam filmul direct in lista
             };
             await _unitOfWork.WatchlistRepository.AddAsync(newWatchlist, cancellationToken);
             watchlistToSave = newWatchlist;
         }
 
-        // 3. Salvam totul in baza de date (muncitorii isi fac treaba)
+        // 3. salvam totul in baza de date
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new WatchlistDto(

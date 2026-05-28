@@ -9,8 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -40,19 +40,8 @@ builder.Services.AddScoped<MovieLog.Services.IMovieService, MovieLog.Services.Mo
 
 builder.Services.AddScoped<MovieLog.Services.IWatchlistService, MovieLog.Services.WatchlistService>();
 
-// inregistram Serviciul de Genuri - AICI ESTE LINIA NOUA
+// inregistram Serviciul de Genuri 
 builder.Services.AddScoped<MovieLog.Services.IGenreService, MovieLog.Services.GenreService>();
-
-// permitem frontend ului de angular sa ceara date din api ul nostru
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngularDev", policy =>
-    {
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
 
 var app = builder.Build();
 
@@ -72,9 +61,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
-// activam regula chiar inainte de logare
-app.UseCors("AllowAngularDev");
 
 app.UseAuthentication();
 app.UseAuthorization();

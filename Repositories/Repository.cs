@@ -12,7 +12,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     public Repository(AppDbContext context)
     {
         _context = context;
-        _dbSet = context.Set<T>(); // Deschide "sertarul" pentru tabelul T
+        _dbSet = context.Set<T>();
     }
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)

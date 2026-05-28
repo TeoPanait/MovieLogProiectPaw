@@ -9,7 +9,7 @@ public class MovieService : IMovieService
 {
     private readonly IUnitOfWork _unitOfWork;
 
-    // Injectam dirijorul în serviciu
+    // injectam dirijorul în serviciu
     public MovieService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
@@ -17,16 +17,16 @@ public class MovieService : IMovieService
 
     public async Task<IEnumerable<MovieDto>> GetAllMoviesAsync(CancellationToken cancellationToken = default)
     {
-        //  Cerem entitatile de la muncitor repository
+        //  cerem entitatile de la repository
         var movies = await _unitOfWork.MovieRepository.GetAllWithDetailsAsync(cancellationToken);
 
-        //  Le transformam în DTO-uri
+        //  le transformam în DTO
         return movies.Select(m => new MovieDto(
             m.Id,
             m.Title,
             m.Description,
             m.ImageUrl,
-            m.Genres.Select(g => g.Name).ToList() // Luam doar numele genurilor
+            m.Genres.Select(g => g.Name).ToList() 
         ));
     }
 
@@ -46,16 +46,16 @@ public class MovieService : IMovieService
 
     public async Task<MovieDto> CreateMovieAsync(CreateMovieDto dto, CancellationToken cancellationToken = default)
     {
-        // Transformam DTO-ul venit de pe internet în Entitate ca sa-l putem salva
+        // transf dto ul in entitate sa l putem salva
         var movie = new Movie
         {
             Title = dto.Title,
             Description = dto.Description,
             ImageUrl = dto.ImageUrl,
-            Genres = new List<Genre>() // Inițializăm lista goală pentru genuri
+            Genres = new List<Genre>() // init lista goala pt genuri
         };
 
-        // Căutăm genurile selectate și le lipim de film
+        // cautam genurile selectate si le punem filmului
         if (dto.GenreIds != null && dto.GenreIds.Any())
         {
             foreach (var genreId in dto.GenreIds)
@@ -68,19 +68,19 @@ public class MovieService : IMovieService
             }
         }
 
-        // Dam entitatea muncitorului sa o puna în cos
+       
         await _unitOfWork.MovieRepository.AddAsync(movie, cancellationToken);
 
-        // Spunem dirijorului sa salveze baza de date
+        // calvam in baza de date
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new MovieDto(movie.Id, movie.Title, movie.Description, movie.ImageUrl, movie.Genres.Select(g => g.Name).ToList());
     }
 
-    // ATENȚIE: Aici am schimbat MovieDto în UpdateMovieDto
+
     public async Task UpdateMovieAsync(int id, UpdateMovieDto dto, CancellationToken cancellationToken = default)
     {
-        // 1. cautam filmul folosind repository-ul (muncitorul), la fel cum ai facut la metoda de Get
+        // 1. cautam filmul folosind repository 
         var movie = await _unitOfWork.MovieRepository.GetByIdWithDetailsAsync(id, cancellationToken);
 
         if (movie != null)
@@ -90,7 +90,6 @@ public class MovieService : IMovieService
             movie.Description = dto.Description;
             movie.ImageUrl = dto.ImageUrl;
 
-            // Ștergem genurile vechi pentru a le pune pe cele noi, proaspăt bifate
             movie.Genres.Clear();
 
             if (dto.GenreIds != null && dto.GenreIds.Any())
@@ -108,7 +107,7 @@ public class MovieService : IMovieService
             // 3. spunem repository-ului ca entitatea s-a modificat 
             _unitOfWork.MovieRepository.Update(movie);
 
-            // 4. dirijorul da comanda de salvare in baza de date
+            // 4.  salvare in baza de date
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }

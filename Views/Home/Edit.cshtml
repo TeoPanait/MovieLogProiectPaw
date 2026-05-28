@@ -7,13 +7,13 @@
     <hr />
     <div class='row'>
         <div class='col-md-6'>
-            <!-- Am adaugat form pentru a permite validarea browserului -->
+            <!--  form pentru validarea browserului -->
             <form id="editForm">
                 <input type='hidden' id='hiddenMovieId' value='@ViewBag.MovieId' />
 
                 <div class='mb-3'>
                     <label class='form-label'>titlu film</label>
-                    <!-- Atributele 'required' si 'minlength' sunt citite de validarea client-side -->
+                    <!-- atr required si minlength sunt citite de validarea client-side -->
                     <input type='text' id='title' class='form-control' required minlength="3" />
                 </div>
 

@@ -1,7 +1,7 @@
 ﻿@using System.Security.Claims
 @{
     ViewData["Title"] = "Watchlist-ul Meu";
-    // Luam ID-ul userului ca sa stim a cui lista o cautam
+    // luam user id sa stim a cui e lsita
     var currentUserId = User.Identity != null && User.Identity.IsAuthenticated
                         ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                         : "";
@@ -22,22 +22,20 @@
         const currentUserId = "@currentUserId";
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Cerem de la server toate watchlist-urile
+            // cerem de la server toate watchlist urile
             fetch('/api/watchlists')
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('watchlist-container');
 
-                    // Cautam doar lista care apartine userului logat acum
+					// cautram lista care apartine userului curent
                     const myWatchlist = data.find(w => w.userId === currentUserId);
 
-                    // Daca nu are lista sau lista e goala
                     if (!myWatchlist || !myWatchlist.movieTitles || myWatchlist.movieTitles.length === 0) {
                         container.innerHTML = '<p class="text-warning">Nu ai adaugat niciun film in watchlist inca.</p>';
                         return;
                     }
 
-                    // Daca are filme, le desenam ca pe o lista simpla si curata
                     let htmlList = '<ul class="list-group col-md-6 shadow-sm">';
 
                     myWatchlist.movieTitles.forEach(title => {

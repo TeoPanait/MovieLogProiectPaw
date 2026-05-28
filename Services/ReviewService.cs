@@ -16,7 +16,7 @@ public class ReviewService : IReviewService
     public async Task<IEnumerable<ReviewDto>> GetAllReviewsAsync(CancellationToken cancellationToken = default)
     {
         var reviews = await _unitOfWork.ReviewRepository.GetAllAsync(cancellationToken);
-        // Mapăm entitatea Review în ReviewDto (ajustează câmpurile dacă la tine se numesc altfel în DTO)
+        // mapam riview in review dto
         return reviews.Select(r => new ReviewDto(r.Id, r.Text, r.Rating, r.MovieId, r.UserId));
     }
 
