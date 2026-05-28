@@ -22,6 +22,11 @@
                     <textarea id='description' class='form-control' rows='4' required></textarea>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label">link imagine (optional)</label>
+                    <input type="url" id="imageUrl" class="form-control" placeholder="https://..." />
+                </div>
+
                 <div class='mb-3'>
                     <label class='form-label'>genuri</label>
                     <div id='genresContainer' class='d-flex flex-wrap gap-3 p-2 border rounded'>
@@ -51,6 +56,7 @@
 
                 document.getElementById('title').value = movie.title;
                 document.getElementById('description').value = movie.description;
+                document.getElementById('imageUrl').value = movie.imageUrl || '';
 
                 const responseGenres = await fetch('/api/genres');
                 const allGenres = await responseGenres.json();
@@ -84,6 +90,7 @@
             const updatedData = {
                 title: document.getElementById('title').value,
                 description: document.getElementById('description').value,
+                imageUrl: document.getElementById('imageUrl').value || null,
                 genreIds: selectedGenreIds
             };
 
